@@ -2,8 +2,9 @@
   "name": "@austrade/chartkit",
   "version": "1.0.0",
   "private": false,
+  "license": "MIT",
   "type": "module",
-  "description": "Datathing ChartKit React package for DuckDB-WASM and ECharts analytics embeds",
+  "description": "A lightweight, embedded version of Datathing for React applications, built on top of DuckDB and ECharts.",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -21,6 +22,9 @@
   "sideEffects": [
     "./src/lib/styles.css"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "clean": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\"",
     "build:types": "tsc -p tsconfig.build.json",
