@@ -1,0 +1,61 @@
+{
+  "name": "@austrade/chartkit",
+  "version": "1.0.0",
+  "private": false,
+  "type": "module",
+  "description": "Datathing ChartKit React package for DuckDB-WASM and ECharts analytics embeds",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./react": {
+      "types": "./dist/react.d.ts",
+      "import": "./dist/react.js"
+    },
+    "./style.css": "./src/lib/styles.css"
+  },
+  "sideEffects": [
+    "./src/lib/styles.css"
+  ],
+  "scripts": {
+    "clean": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\"",
+    "build:types": "tsc -p tsconfig.build.json",
+    "build:js": "vite build",
+    "build": "npm run clean && npm run build:types && npm run build:js",
+    "prepack": "npm run build"
+  },
+  "keywords": [
+    "datathing",
+    "chartkit",
+    "react",
+    "duckdb",
+    "echarts",
+    "analytics",
+    "parquet"
+  ],
+  "dependencies": {
+    "@duckdb/duckdb-wasm": "^1.29.0",
+    "echarts": "^5.6.0",
+    "echarts-for-react": "^3.0.2"
+  },
+  "peerDependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.64",
+    "@types/react-dom": "^18.2.21",
+    "@vitejs/plugin-react": "^4.3.1",
+    "typescript": "^5.6.3",
+    "vite": "^5.4.8"
+  },
+  "files": [
+    "dist",
+    "src/lib/styles.css",
+    "README.md"
+  ]
+}
