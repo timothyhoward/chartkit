@@ -408,13 +408,12 @@ Package entry points:
 
 The package is built as ESM and expects a bundler-compatible React application.
 
-## CI Smoke Tests
+## CI
 
 Recommended verification flow:
 
 - build the package
 - build the example host app
-- run the browser smoke test in GitHub Actions
 
 Example commands:
 
@@ -429,11 +428,6 @@ npm run build
 Primary workflow:
 
 - `../.github/workflows/chartkit-ci.yml`
-
-Smoke test assets live in the example app and are executed by CI:
-
-- `../example-react-app/playwright.config.ts`
-- `../example-react-app/e2e/chartkit-smoke.spec.ts`
 
 Reference checklist:
 
@@ -451,7 +445,6 @@ Before publishing `@austrade/chartkit`:
    - run `npm run build` in `example-react-app`
 3. Verify GitHub Actions is green
    - `Build` job passes on Linux and Windows
-   - `E2E Smoke` job passes
 4. Review published surface
    - check `README.md`
    - check `package.json` `exports`, `files`, `peerDependencies`
