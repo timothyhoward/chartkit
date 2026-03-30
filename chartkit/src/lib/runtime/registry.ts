@@ -38,6 +38,7 @@ interface NamespaceConfig {
   namespace: string;
   params: HostParams;
   theme: ChartKitThemeName;
+  bundleBaseUrl?: string;
 }
 
 interface NamespaceState {
@@ -153,6 +154,7 @@ export function registerNamespaceConfig(
     namespace,
     params: config.params,
     theme: config.theme,
+    bundleBaseUrl: config.bundleBaseUrl,
   };
   state.config = registerOwnedDefinition(
     state.config,

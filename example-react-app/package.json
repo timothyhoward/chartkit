@@ -4,9 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "predev": "npm --prefix ../chartkit run build",
+    "predev": "npm --prefix ../chartkit run build && node ./scripts/prepare-duckdb-bundles.mjs",
     "dev": "vite",
-    "prebuild": "npm --prefix ../chartkit run build",
+    "prebuild": "npm --prefix ../chartkit run build && node ./scripts/prepare-duckdb-bundles.mjs",
     "build": "vite build",
     "prepare:duckdb": "node ./scripts/prepare-duckdb-bundles.mjs",
     "preview": "vite preview"

@@ -15,6 +15,7 @@ export default defineConfig({
       fileName: (_format, entryName) => `${entryName}.js`,
     },
     rollupOptions: {
+      treeshake: false,
       external: [
         "react",
         "react-dom",

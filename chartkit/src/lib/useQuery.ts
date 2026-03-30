@@ -77,6 +77,8 @@ async function runNamespacedQuery(
 
   const runtime = await getSharedRuntime(
     dataSources,
+    undefined,
+    snapshot.config.bundleBaseUrl ? { bundleBaseUrl: snapshot.config.bundleBaseUrl } : undefined,
   );
   await runtime.registerDataSources(dataSources);
   await runtime.ensureDataSourcesLoaded(dataSourceDependencies);

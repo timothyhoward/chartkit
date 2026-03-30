@@ -1,4 +1,4 @@
-import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync, statSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { brotliCompressSync, constants } from "node:zlib";
@@ -31,24 +31,38 @@ const files = [
 
 mkdirSync(outputDir, { recursive: true });
 
+function isUpToDate(sourcePath, outputPath) {
+  if (!existsSync(outputPath)) return false;
+  return statSync(sourcePath).mtimeMs <= statSync(outputPath).mtimeMs;
+}
+
 for (const fileName of files) {
   const sourcePath = join(duckdbDistDir, fileName);
   const outputPath = join(outputDir, fileName);
+
+  if (isUpToDate(sourcePath, outputPath)) {
+    console.log(`up to date: ${fileName}`);
+    continue;
+  }
+
   copyFileSync(sourcePath, outputPath);
   console.log(`copied: ${fileName}`);
 
   if (fileName.endsWith(".wasm")) {
-    const source = readFileSync(outputPath);
-    const compressed = brotliCompressSync(source, {
-      params: {
-        [constants.BROTLI_PARAM_QUALITY]: 11,
-        [constants.BROTLI_PARAM_MODE]: constants.BROTLI_MODE_GENERIC,
-      },
-    });
-    writeFileSync(`${outputPath}.br`, compressed);
-    const saved = source.length - compressed.length;
-    const ratio = source.length === 0 ? 0 : ((saved / source.length) * 100).toFixed(1);
-    console.log(`brotli: ${fileName}.br (${ratio}% smaller)`);
+    const brOutputPath = `${outputPath}.br`;
+    if (!isUpToDate(sourcePath, brOutputPath)) {
+      const source = readFileSync(outputPath);
+      const compressed = brotliCompressSync(source, {
+        params: {
+          [constants.BROTLI_PARAM_QUALITY]: 11,
+          [constants.BROTLI_PARAM_MODE]: constants.BROTLI_MODE_GENERIC,
+        },
+      });
+      writeFileSync(brOutputPath, compressed);
+      const saved = source.length - compressed.length;
+      const ratio = source.length === 0 ? 0 : ((saved / source.length) * 100).toFixed(1);
+      console.log(`brotli: ${fileName}.br (${ratio}% smaller)`);
+    }
   }
 }
 

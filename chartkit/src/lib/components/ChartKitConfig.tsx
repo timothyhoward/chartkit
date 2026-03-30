@@ -20,6 +20,7 @@ export interface ChartKitConfigProps {
   namespace: string;
   params?: HostParams;
   theme?: ChartKitThemeName;
+  bundleBaseUrl?: string;
   children?: ReactNode;
 }
 
@@ -27,6 +28,7 @@ export function ChartKitConfig({
   namespace,
   params,
   theme = "chartkit",
+  bundleBaseUrl,
   children,
 }: ChartKitConfigProps) {
   const ownerRef = useRef<symbol>();
@@ -54,10 +56,10 @@ export function ChartKitConfig({
   useLayoutEffect(() => {
     return registerNamespaceConfig(
       namespace,
-      { params: normalizedParams, theme },
+      { params: normalizedParams, theme, bundleBaseUrl },
       ownerRef.current as symbol,
     );
-  }, [namespace, paramsKey, normalizedParams, theme]);
+  }, [namespace, paramsKey, normalizedParams, theme, bundleBaseUrl]);
 
   const value = useMemo(() => ({ namespace }), [namespace]);
 

@@ -84,6 +84,7 @@ function App() {
       <ChartKitConfig
         namespace="exports"
         theme="clarity"
+        bundleBaseUrl="/duckdb"
         params={{
           marketId,
         }}

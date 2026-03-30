@@ -200,11 +200,15 @@ async function createDatabase(
   });
   const bootstrapConnection = await db.connect();
   try {
-    // Best-effort runtime hints to reduce repeated remote metadata/object fetches.
+    // Best-effort runtime hint to reduce repeated remote metadata fetches.
     await bootstrapConnection.query("SET enable_object_cache = true");
-    await bootstrapConnection.query("SET enable_http_metadata_cache = true");
+    // NOTE: enable_http_metadata_cache is intentionally omitted. On Windows +
+    // Chromium, DuckDB WASM cannot resolve the cache path it constructs, which
+    // corrupts subsequent parquet reads with TProtocolException: Invalid data.
+    // The Windows parquet caching bug is addressed at the HTTP layer instead —
+    // see the parquet-cache-fix service worker in consuming applications.
   } catch {
-    // Older DuckDB builds may not expose one of these settings.
+    // Older DuckDB builds may not expose this setting.
   } finally {
     await bootstrapConnection.close();
   }
