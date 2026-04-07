@@ -1,6 +1,6 @@
 import { Children, isValidElement, type ReactNode } from "react";
 import { useQuery } from "../useQuery";
-import { formatChartKitDisplayValue } from "../format";
+import { formatChartKitDisplayValue, formatChartKitNumber } from "../format";
 import type { DataTableColumnDefinition } from "../runtime/definitions";
 import { DataColumn, type DataColumnProps } from "./DataColumn";
 import { OverflowTooltip } from "./OverflowTooltip";
@@ -85,13 +85,10 @@ export function DataTable({ namespace, data, columns, children }: DataTableProps
     }
     if (typeof value === "number") {
       const fractionDigits = Number.isInteger(value) ? 0 : 2;
-      return value.toLocaleString("en-AU", {
-        minimumFractionDigits: fractionDigits,
-        maximumFractionDigits: fractionDigits,
-      });
+      return formatChartKitNumber(value, `num${fractionDigits}`);
     }
     if (typeof value === "bigint") {
-      return value.toLocaleString("en-AU");
+      return formatChartKitNumber(Number(value), "num0");
     }
     return asString(value);
   };

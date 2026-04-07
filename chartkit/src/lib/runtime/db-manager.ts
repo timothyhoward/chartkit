@@ -44,12 +44,12 @@ export async function getSharedRuntime(
     return runtime;
   }
 
+  // createDuckDbRuntime already calls registerDataSources with the initial
+  // dataSources array, so we skip the redundant second call for new runtimes.
   const runtimePromise = createDuckDbRuntime(dataSources, onTelemetry, options).catch((error) => {
     runtimeByKey.delete(key);
     throw error;
   });
   runtimeByKey.set(key, runtimePromise);
-  const runtime = await runtimePromise;
-  await runtime.registerDataSources(dataSources);
-  return runtime;
+  return runtimePromise;
 }
