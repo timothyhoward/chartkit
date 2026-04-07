@@ -1,10 +1,10 @@
 import { useQuery } from "../useQuery";
 import { formatChartKitDisplayValue } from "../format";
-import { asNumber, asString } from "./utils";
 import { chartKitTooltipBase } from "./chartTooltip";
 import { echarts, ReactEChartsCore } from "./echartsCore";
 import { themeVars } from "./themeVars";
 import { useChartKitNamespace } from "./useChartKitNamespace";
+import { useChartSeries } from "./useChartSeries";
 
 export interface LineChartProps {
   namespace: string;
@@ -37,6 +37,16 @@ export function LineChart({
 }: LineChartProps) {
   const theme = useChartKitNamespace(namespace).theme;
   const { loading, error, rows } = useQuery(namespace, data);
+  const { xLabels, rankedSeries } = useChartSeries({
+    rows,
+    xValueField,
+    xLabelField,
+    yValueField,
+    yLabelField,
+    yAxisTitle,
+    seriesValueField,
+    seriesLabelField,
+  });
 
   if (loading) {
     return <div className="ck-inline-status">Loading...</div>;
@@ -44,52 +54,9 @@ export function LineChart({
   if (error) {
     return <div className="ck-inline-status">Error: {error}</div>;
   }
-
-  const xValues = new Map<string, string>();
-  const seriesLabels = new Map<string, string>();
-  const matrix = new Map<string, Map<string, number>>();
-
-  for (const row of rows) {
-    const xValue = asString(row[xValueField]);
-    const xLabelCandidate = xLabelField ? asString(row[xLabelField]) : "";
-    const xLabel = xLabelCandidate || xValue;
-    if (!xValues.has(xValue)) {
-      xValues.set(xValue, xLabel);
-    }
-
-    const seriesValue = seriesValueField ? asString(row[seriesValueField]) : "__single";
-    const seriesLabelCandidate = seriesLabelField ? asString(row[seriesLabelField]) : "";
-    const fallbackSeriesLabel = yAxisTitle ?? yLabelField ?? "Value";
-    const seriesLabel = seriesValueField
-      ? seriesLabelCandidate || seriesValue
-      : fallbackSeriesLabel;
-    if (!seriesLabels.has(seriesValue)) {
-      seriesLabels.set(seriesValue, seriesLabel);
-    }
-
-    const yValue = asNumber(row[yValueField]);
-    const currentSeries = matrix.get(seriesValue) ?? new Map<string, number>();
-    currentSeries.set(xValue, (currentSeries.get(xValue) ?? 0) + yValue);
-    matrix.set(seriesValue, currentSeries);
-  }
-
-  const xKeys = Array.from(xValues.keys());
-  const xLabels = xKeys.map((key) => xValues.get(key) ?? key);
   const shouldRotate = xLabels.length > 10 || xLabels.some((label) => label.length > 11);
   const valueFmt = yFmt ?? fmt;
   const palette = theme.charts.palette;
-
-  const rankedSeries = Array.from(seriesLabels.entries())
-    .map(([seriesKey, seriesName]) => ({
-      seriesKey,
-      seriesName,
-      values: xKeys.map((xKey) => matrix.get(seriesKey)?.get(xKey) ?? 0),
-    }))
-    .map((entry) => ({
-      ...entry,
-      total: entry.values.reduce((sum, value) => sum + value, 0),
-    }))
-    .sort((left, right) => right.total - left.total || left.seriesName.localeCompare(right.seriesName));
 
   const series = rankedSeries.map(({ seriesName, values }, index) => {
     const color = palette[index % palette.length];

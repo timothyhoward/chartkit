@@ -2,6 +2,18 @@ export type ChartKitFmt = string | undefined;
 
 const LOCALE = "en-AU";
 
+const formatterCache = new Map<string, Intl.NumberFormat>();
+
+function cachedFormatter(options: Intl.NumberFormatOptions): Intl.NumberFormat {
+  const key = JSON.stringify(options);
+  let fmt = formatterCache.get(key);
+  if (!fmt) {
+    fmt = new Intl.NumberFormat(LOCALE, options);
+    formatterCache.set(key, fmt);
+  }
+  return fmt;
+}
+
 function parseDecimals(fmt: string, prefix: string): number | null {
   if (!fmt.startsWith(prefix)) {
     return null;
@@ -47,14 +59,14 @@ function parseCurrencyThousandsToken(
 }
 
 function formatCompactNumber(value: number): string {
-  return new Intl.NumberFormat(LOCALE, {
+  return cachedFormatter({
     notation: "compact",
     maximumFractionDigits: 1,
   }).format(value);
 }
 
 function formatCurrency(value: number, currency: "AUD" | "USD", decimals: number): string {
-  return new Intl.NumberFormat(LOCALE, {
+  return cachedFormatter({
     style: "currency",
     currency,
     minimumFractionDigits: decimals,
@@ -75,13 +87,13 @@ export function formatChartKitNumber(value: number, fmt?: ChartKitFmt): string {
     return `US$${value.toFixed(1)}B`;
   }
   if (fmt === "currency_usd_m") {
-    return `US$${value.toLocaleString(LOCALE, { maximumFractionDigits: 0 })}M`;
+    return `US$${cachedFormatter({ maximumFractionDigits: 0 }).format(value)}M`;
   }
   if (fmt === "currency_aud_bn") {
     return `A$${value.toFixed(1)}B`;
   }
   if (fmt === "currency_aud_m") {
-    return `A$${value.toLocaleString(LOCALE, { maximumFractionDigits: 0 })}M`;
+    return `A$${cachedFormatter({ maximumFractionDigits: 0 }).format(value)}M`;
   }
   if (fmt === "usd") {
     return formatCurrency(value, "USD", 2);
@@ -100,10 +112,10 @@ export function formatChartKitNumber(value: number, fmt?: ChartKitFmt): string {
 
   const numDecimals = parseDecimals(fmt, "num");
   if (numDecimals !== null) {
-    return value.toLocaleString(LOCALE, {
+    return cachedFormatter({
       minimumFractionDigits: numDecimals,
       maximumFractionDigits: numDecimals,
-    });
+    }).format(value);
   }
 
   const audDecimals = parseDecimals(fmt, "aud");
@@ -120,10 +132,10 @@ export function formatChartKitNumber(value: number, fmt?: ChartKitFmt): string {
   if (currencyThousandsToken) {
     const symbol = currencyThousandsToken.currency === "AUD" ? "A$" : "US$";
     const scaled = value / 1_000;
-    return `${symbol}${scaled.toLocaleString(LOCALE, {
+    return `${symbol}${cachedFormatter({
       minimumFractionDigits: currencyThousandsToken.decimals,
       maximumFractionDigits: currencyThousandsToken.decimals,
-    })}K`;
+    }).format(scaled)}K`;
   }
 
   const currencyToken = parseCurrencyToken(fmt);
@@ -131,7 +143,7 @@ export function formatChartKitNumber(value: number, fmt?: ChartKitFmt): string {
     return formatCurrency(value, currencyToken.currency, currencyToken.decimals);
   }
 
-  return value.toLocaleString(LOCALE);
+  return cachedFormatter({}).format(value);
 }
 
 export function formatChartKitDisplayValue(value: unknown, fmt?: ChartKitFmt): string {
